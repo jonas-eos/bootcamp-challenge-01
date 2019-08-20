@@ -12,7 +12,7 @@ server.use(express.json());
 /**
  * Consts
  */
-const projects = {};
+const projects = [];
 
 /**
  * Core system
@@ -27,6 +27,25 @@ const projects = {};
  * @return projects array
  */
 server.get("/projects", (__request, __response) => {
+  return __response.json(projects);
+});
+
+/**
+ * Router /projects
+ * Lista all projects saved
+ * @param {body} __request
+ * @param __response
+ *
+ * @return new projects array
+ */
+server.post("/projects", (__request, __response) => {
+  const { id, title } = __request.body;
+  const project = {
+    id,
+    title,
+    tasks: []
+  };
+  projects.push(project);
   return __response.json(projects);
 });
 
