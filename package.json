@@ -5,7 +5,11 @@
   "repository": "https://github.com/jonas-eos/bootcamp-challenge-01",
   "author": "Jonas Evangelista <jonas.eos@outlook.com>",
   "license": "MIT",
+  "scripts": {
+    "start-server": "nodemon index.js"
+  },
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "nodemon": "^1.19.1"
   }
 }
