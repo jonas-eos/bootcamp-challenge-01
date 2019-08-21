@@ -1,34 +1,18 @@
-/**
- * Dependencies
- */
 const express = require("express");
 
-/**
- * Consts
- */
+// constant to save projects
 const projects = [];
 
-// Counter
+// Request counter
 let requestCount = 0;
 
-/**
- * Server settings
- */
+// Server settings
 const server = express();
 server.use(express.json());
 
 /**
- * Middlewares
- */
-
-/**
  * Middleware
- * Print log with request ID
- * @param __request
- * @param __response
- * @param __next
- *
- * @return console with request ID.
+ * Print log with the request ID number
  */
 server.use((__request, __response, __next) => {
   requestCount++;
@@ -38,22 +22,45 @@ server.use((__request, __response, __next) => {
 
 /**
  * Middleware
- * Check if exist a project by ID params
- * @param __request
- * @param __response
- * @param __next
- *
- * @return next call
+ * Before change one project, the system check if it exist.
  */
-function checkProjectExists(__request, __response, __next) {
+function checkBeforeChange(__request, __response, __next) {
   const { id } = __request.params;
-  const project = projects.find(index => index.id == id);
-  if (!project) {
+  if (projectExist(id) == false) {
     return __response.status(400).json({
       error: "Project does not exists!"
     });
   }
   return __next();
+}
+
+/**
+ * Middleware
+ * Before create a new project, the system check if it exist.
+ *
+ */
+function checkBeforeCreate(__request, __response, __next) {
+  const { id } = __request.body;
+  if (projectExist(id) == true) {
+    return __response.status(400).json({
+      error: "This projects exist, you can not create a new one!"
+    });
+  }
+  return __next();
+}
+
+/**
+ * Check is project exist
+ *
+ * @param __id
+ *
+ * @return boolean
+ */
+function projectExist(__id) {
+  const project = projects.find(index => index.id == __id);
+  if (project) {
+    return true;
+  } else return false;
 }
 
 /**
@@ -80,7 +87,7 @@ server.get("/projects", (__request, __response) => {
  *
  * @return new projects array
  */
-server.post("/projects", (__request, __response) => {
+server.post("/projects", checkBeforeCreate, (__request, __response) => {
   const { id, title } = __request.body;
   const project = {
     id,
@@ -101,7 +108,7 @@ server.post("/projects", (__request, __response) => {
  */
 server.post(
   "/projects/:id/tasks",
-  checkProjectExists,
+  checkBeforeChange,
   (__request, __response) => {
     const { id } = __request.params;
     const { title } = __request.body;
@@ -119,7 +126,7 @@ server.post(
  *
  * @return projects updated
  */
-server.put("/projects/:id", checkProjectExists, (__request, __response) => {
+server.put("/projects/:id", checkBeforeChange, (__request, __response) => {
   const { id } = __request.params;
   const { title } = __request.body;
   const project = projects.find(index => index.id == id);
@@ -135,7 +142,7 @@ server.put("/projects/:id", checkProjectExists, (__request, __response) => {
  *
  * @return projects updated
  */
-server.delete("/projects/:id", checkProjectExists, (__request, __response) => {
+server.delete("/projects/:id", checkBeforeChange, (__request, __response) => {
   const { id } = __request.params;
   const projectIndex = projects.findIndex(index => index.id == id);
   projects.splice(projectIndex, 1);
