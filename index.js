@@ -9,6 +9,7 @@ let requestCount = 0;
 // Server settings
 const server = express();
 server.use(express.json());
+server.listen(8080);
 
 /**
  * Middleware
@@ -27,7 +28,7 @@ server.use((__request, __response, __next) => {
 function checkBeforeChange(__request, __response, __next) {
   const { id } = __request.params;
   if (projectExist(id) == false) {
-    return __response.status(400).json({
+    return __response.status(406).json({
       error: "Project does not exists!"
     });
   }
@@ -37,12 +38,11 @@ function checkBeforeChange(__request, __response, __next) {
 /**
  * Middleware
  * Before create a new project, the system check if it exist.
- *
  */
 function checkBeforeCreate(__request, __response, __next) {
   const { id } = __request.body;
   if (projectExist(id) == true) {
-    return __response.status(400).json({
+    return __response.status(406).json({
       error: "This projects exist, you can not create a new one!"
     });
   }
@@ -63,17 +63,11 @@ function projectExist(__id) {
   } else return false;
 }
 
-/**
- * Core system
- */
+// ##Core system
 
 /**
  * Router /projects
- * Lista all projects saved
- * @param __request
- * @param __response
- *
- * @return projects array
+ * Lista all projects saved.
  */
 server.get("/projects", (__request, __response) => {
   return __response.json(projects);
@@ -81,11 +75,7 @@ server.get("/projects", (__request, __response) => {
 
 /**
  * Router /projects
- * Lista all projects saved
- * @param {body} __request
- * @param __response
- *
- * @return new projects array
+ * Create a new project, with standard empty task.
  */
 server.post("/projects", checkBeforeCreate, (__request, __response) => {
   const { id, title } = __request.body;
@@ -100,11 +90,7 @@ server.post("/projects", checkBeforeCreate, (__request, __response) => {
 
 /**
  * Router /projects/:id/tasks
- * Add a new task to a project id
- * @param {param, body} __request
- * @param __response
- *
- * @return projects updated
+ * Add a new task inside a project.
  */
 server.post(
   "/projects/:id/tasks",
@@ -120,11 +106,7 @@ server.post(
 
 /**
  * Router /projects/:id
- * Change title of a project from id
- * @param {body, param} __request
- * @param __response
- *
- * @return projects updated
+ * Change title of a project.
  */
 server.put("/projects/:id", checkBeforeChange, (__request, __response) => {
   const { id } = __request.params;
@@ -136,11 +118,7 @@ server.put("/projects/:id", checkBeforeChange, (__request, __response) => {
 
 /**
  * Router /projects/:id
- * Delete a project with id value
- * @param {param} __request
- * @param __response
- *
- * @return projects updated
+ * Delete a project.
  */
 server.delete("/projects/:id", checkBeforeChange, (__request, __response) => {
   const { id } = __request.params;
@@ -148,8 +126,3 @@ server.delete("/projects/:id", checkBeforeChange, (__request, __response) => {
   projects.splice(projectIndex, 1);
   return __response.json(projects);
 });
-
-/**
- * Server listen
- */
-server.listen(8080);
