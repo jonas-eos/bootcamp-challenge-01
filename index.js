@@ -1,30 +1,73 @@
-/**
- * Dependencies
- */
 const express = require("express");
 
-/**
- * Server settings
- */
-const server = express();
-server.use(express.json());
-
-/**
- * Consts
- */
+// constant to save projects
 const projects = [];
 
+// Request counter
+let requestCount = 0;
+
+// Server settings
+const server = express();
+server.use(express.json());
+server.listen(8080);
+
 /**
- * Core system
+ * Middleware
+ * Print log with the request ID number
  */
+server.use((__request, __response, __next) => {
+  requestCount++;
+  console.log(`Request ID: ${requestCount}`);
+  return __next();
+});
+
+/**
+ * Middleware
+ * Before change one project, the system check if it exist.
+ */
+function checkBeforeChange(__request, __response, __next) {
+  const { id } = __request.params;
+  if (projectExist(id) == false) {
+    return __response.status(406).json({
+      error: "Project does not exists!"
+    });
+  }
+  return __next();
+}
+
+/**
+ * Middleware
+ * Before create a new project, the system check if it exist.
+ */
+function checkBeforeCreate(__request, __response, __next) {
+  const { id } = __request.body;
+  if (projectExist(id) == true) {
+    return __response.status(406).json({
+      error: "This projects exist, you can not create a new one!"
+    });
+  }
+  return __next();
+}
+
+/**
+ * Check is project exist
+ *
+ * @param __id
+ *
+ * @return boolean
+ */
+function projectExist(__id) {
+  const project = projects.find(index => index.id == __id);
+  if (project) {
+    return true;
+  } else return false;
+}
+
+// ##Core system
 
 /**
  * Router /projects
- * Lista all projects saved
- * @param __request
- * @param __response
- *
- * @return projects array
+ * Lista all projects saved.
  */
 server.get("/projects", (__request, __response) => {
   return __response.json(projects);
@@ -32,13 +75,9 @@ server.get("/projects", (__request, __response) => {
 
 /**
  * Router /projects
- * Lista all projects saved
- * @param {body} __request
- * @param __response
- *
- * @return new projects array
+ * Create a new project, with standard empty task.
  */
-server.post("/projects", (__request, __response) => {
+server.post("/projects", checkBeforeCreate, (__request, __response) => {
   const { id, title } = __request.body;
   const project = {
     id,
@@ -50,14 +89,26 @@ server.post("/projects", (__request, __response) => {
 });
 
 /**
- * Router /projects/:id
- * Change title of a project from id
- * @param {body, param} __request
- * @param __response
- *
- * @return projects updated
+ * Router /projects/:id/tasks
+ * Add a new task inside a project.
  */
-server.put("/projects/:id", (__request, __response) => {
+server.post(
+  "/projects/:id/tasks",
+  checkBeforeChange,
+  (__request, __response) => {
+    const { id } = __request.params;
+    const { title } = __request.body;
+    const project = projects.find(index => index.id == id);
+    project.tasks.push(title);
+    return __response.json(projects);
+  }
+);
+
+/**
+ * Router /projects/:id
+ * Change title of a project.
+ */
+server.put("/projects/:id", checkBeforeChange, (__request, __response) => {
   const { id } = __request.params;
   const { title } = __request.body;
   const project = projects.find(index => index.id == id);
@@ -67,20 +118,11 @@ server.put("/projects/:id", (__request, __response) => {
 
 /**
  * Router /projects/:id
- * Delete a project with id value
- * @param {param} __request
- * @param __response
- *
- * @return projects updated
+ * Delete a project.
  */
-server.delete("/projects/:id", (__request, __response) => {
+server.delete("/projects/:id", checkBeforeChange, (__request, __response) => {
   const { id } = __request.params;
   const projectIndex = projects.findIndex(index => index.id == id);
   projects.splice(projectIndex, 1);
   return __response.json(projects);
 });
-
-/**
- * Server listen
- */
-server.listen(8080);
