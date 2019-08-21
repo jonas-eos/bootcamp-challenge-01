@@ -66,6 +66,21 @@ server.put("/projects/:id", (__request, __response) => {
 });
 
 /**
+ * Router /projects/:id
+ * Delete a project with id value
+ * @param {param} __request
+ * @param __response
+ *
+ * @return projects updated
+ */
+server.delete("/projects/:id", (__request, __response) => {
+  const { id } = __request.params;
+  const projectIndex = projects.findIndex(index => index.id == id);
+  projects.splice(projectIndex, 1);
+  return __response.json(projects);
+});
+
+/**
  * Server listen
  */
 server.listen(8080);
