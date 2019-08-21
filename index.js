@@ -50,6 +50,22 @@ server.post("/projects", (__request, __response) => {
 });
 
 /**
+ * Router /projects/:id/tasks
+ * Add a new task to a project id
+ * @param {param, body} __request
+ * @param __response
+ *
+ * @return projects updated
+ */
+server.post("/projects/:id/tasks", (__request, __response) => {
+  const { id } = __request.params;
+  const { title } = __request.body;
+  const project = projects.find(index => index.id == id);
+  project.tasks.push(title);
+  return __response.json(projects);
+});
+
+/**
  * Router /projects/:id
  * Change title of a project from id
  * @param {body, param} __request
@@ -62,6 +78,21 @@ server.put("/projects/:id", (__request, __response) => {
   const { title } = __request.body;
   const project = projects.find(index => index.id == id);
   project.title = title;
+  return __response.json(projects);
+});
+
+/**
+ * Router /projects/:id
+ * Delete a project with id value
+ * @param {param} __request
+ * @param __response
+ *
+ * @return projects updated
+ */
+server.delete("/projects/:id", (__request, __response) => {
+  const { id } = __request.params;
+  const projectIndex = projects.findIndex(index => index.id == id);
+  projects.splice(projectIndex, 1);
   return __response.json(projects);
 });
 
