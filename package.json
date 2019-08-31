@@ -6,7 +6,7 @@
   "author": "Jonas Evangelista <jonas.eos@outlook.com>",
   "license": "MIT",
   "scripts": {
-    "start-server": "nodemon index.js"
+    "start": "nodemon index.js"
   },
   "dependencies": {
     "express": "^4.17.1",
